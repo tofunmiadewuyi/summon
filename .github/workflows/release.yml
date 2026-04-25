@@ -9,8 +9,16 @@ permissions:
   contents: write
 
 jobs:
-  build-and-release:
-    runs-on: macos-latest
+  build:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-latest
+            goarch: arm64
+          - runner: macos-13
+            goarch: amd64
+
+    runs-on: ${{ matrix.runner }}
 
     steps:
       - uses: actions/checkout@v4
@@ -21,20 +29,28 @@ jobs:
 
       - name: Build + package
         run: |
-          mkdir -p dist
-
           VERSION=${GITHUB_REF_NAME}
           PROGRAM="summon"
+          NAME="${PROGRAM}_${VERSION}_darwin_${{ matrix.goarch }}"
+          mkdir -p dist
+          go build -ldflags="-s -w -X main.version=$VERSION" -o "dist/$NAME" ./cmd
+          zip -j "dist/${NAME}.zip" "dist/$NAME"
 
-          for GOARCH in amd64 arm64; do
-            NAME="${PROGRAM}_${VERSION}_darwin_${GOARCH}"
-            GOOS=darwin GOARCH=$GOARCH \
-              go build -ldflags="-s -w -X main.version=$VERSION" -o "dist/$NAME" ./cmd
-            zip -j "dist/${NAME}.zip" "dist/$NAME"
-            rm "dist/$NAME"
-          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: summon-darwin-${{ matrix.goarch }}
+          path: dist/*.zip
 
-      - name: Create Release + Upload Assets
-        uses: softprops/action-gh-release@v2
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: dist
+
+      - uses: softprops/action-gh-release@v2
         with:
           files: dist/*
