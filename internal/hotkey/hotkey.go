@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/tofunmiadewuyi/summon/internal/accessibility"
 	"github.com/tofunmiadewuyi/summon/internal/activate"
 	"github.com/tofunmiadewuyi/summon/internal/config"
 	"github.com/tofunmiadewuyi/summon/internal/eventtap"
@@ -14,7 +13,6 @@ import (
 )
 
 func Register(cfg *config.Config) {
-	accessibility.Confirm()
 	eventtap.SetCallback(activate.Focus)
 	eventtap.Clear()
 	seen := map[string]bool{}

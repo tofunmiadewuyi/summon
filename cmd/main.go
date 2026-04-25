@@ -54,6 +54,6 @@ func main() {
 
 	default:
 		fmt.Println("Unknown command:", os.Args[1])
-		fmt.Println("Run 'dbq help' for usage.")
+		fmt.Println("Run 'summon help' for usage.")
 	}
 }
