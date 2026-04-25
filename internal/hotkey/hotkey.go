@@ -43,14 +43,8 @@ func Register(cfg *config.Config) {
 		}
 
 		hook.Register(hook.KeyDown, parsed, func(e hook.Event) {
-			summonApp(hk.App)
+			go summonApp(hk.App)
 		})
-		// Also register with right option (altgr) so both option keys work.
-		if ropt := withRightOption(parsed); ropt != nil {
-			hook.Register(hook.KeyDown, ropt, func(e hook.Event) {
-				summonApp(hk.App)
-			})
-		}
 	}
 
 	go func() {
@@ -105,35 +99,9 @@ func parser(keys string) ([]string, error) {
 	return parsed, nil
 }
 
-// withRightOption returns a copy of keys with "alt" replaced by "altgr" (right option).
-// Returns nil if the combo doesn't use alt.
-func withRightOption(keys []string) []string {
-	found := false
-	out := make([]string, len(keys))
-	for i, k := range keys {
-		if k == "alt" {
-			out[i] = "altgr"
-			found = true
-		} else {
-			out[i] = k
-		}
-	}
-	if !found {
-		return nil
-	}
-	return out
-}
 
-func summonApp(app string) error {
-	script := fmt.Sprintf(`
-		tell application "%s"
-			reopen
-			activate
-		end tell
-		tell application "System Events"
-			tell process "%s" to set frontmost to true
-		end tell`, app, app)
-	return exec.Command("osascript", "-e", script).Run()
+func summonApp(app string) {
+	nativeActivate(app)
 }
 
 func appExists(app string) bool {

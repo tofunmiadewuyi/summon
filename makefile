@@ -15,7 +15,7 @@ build_size:
 
 release:
 	@latest=$$(git tag --sort=-version:refname | head -1); \
-	if [ -z "$$latest" ]; then next="v0.1.0"; \
+	if [ -z "$$latest" ]; then next="v0.0.1"; \
 	else \
 		patch=$$(echo $$latest | cut -d. -f3); \
 		prefix=$$(echo $$latest | cut -d. -f1-2); \

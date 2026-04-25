@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"runtime"
 
 	"github.com/tofunmiadewuyi/summon/internal/config"
 	"github.com/tofunmiadewuyi/summon/internal/hotkey"
@@ -9,6 +10,8 @@ import (
 )
 
 func run() {
+	runtime.LockOSThread()
+
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -26,8 +29,7 @@ func run() {
 	}()
 
 	log.Println("ready to summon ✨")
-	//block forever
-	select {}
+	hotkey.RunMainLoop()
 }
 
 func start() {
