@@ -20,17 +20,16 @@ esac
 
 VERSION=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep tag_name | cut -d '"' -f4)
 
-FILENAME="${PROGRAM}_${VERSION}_${OS}_${ARCH}.tar.gz"
+FILENAME="${PROGRAM}_${VERSION}_${OS}_${ARCH}.zip"
 URL="https://github.com/$REPO/releases/download/$VERSION/$FILENAME"
 
 echo "Installing ${PROGRAM} $VERSION for $OS/$ARCH..."
 
 TMP_DIR=$(mktemp -d)
-curl -L "$URL" -o "$TMP_DIR/$PROGRAM.tar.gz"
-
-tar -xzf "$TMP_DIR/$PROGRAM.tar.gz" -C "$TMP_DIR"
-
-chmod +x "$TMP_DIR/$PROGRAM"
+curl -fsSL "$URL" -o "$TMP_DIR/$FILENAME"
+unzip -q "$TMP_DIR/$FILENAME" -d "$TMP_DIR"
+chmod +x "$TMP_DIR/${PROGRAM}_${VERSION}_${OS}_${ARCH}"
+mv "$TMP_DIR/${PROGRAM}_${VERSION}_${OS}_${ARCH}" "$TMP_DIR/$PROGRAM"
 
 INSTALL_DIR="/usr/local/bin"
 
@@ -39,7 +38,6 @@ if [ ! -w "$INSTALL_DIR" ]; then
   mkdir -p "$INSTALL_DIR"
   echo "Installing to $INSTALL_DIR (no sudo access)"
 
-  # Add to PATH in shell profile if not already present
   SHELL_RC=""
   if [ -f "$HOME/.zshrc" ]; then
     SHELL_RC="$HOME/.zshrc"
