@@ -1,7 +1,32 @@
+#import <AppKit/AppKit.h>
 #include <ApplicationServices/ApplicationServices.h>
 #include <string.h>
 #include "eventtap_darwin.h"
-#include "_cgo_export.h"
+
+static void activateAppNative(const char* cName) {
+	NSString* appName = [NSString stringWithUTF8String:cName];
+	dispatch_async(dispatch_get_main_queue(), ^{
+		NSArray<NSRunningApplication*>* running = [[NSWorkspace sharedWorkspace] runningApplications];
+		for (NSRunningApplication* app in running) {
+			if ([app.localizedName caseInsensitiveCompare:appName] == NSOrderedSame) {
+				[app unhide];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+				[app activateWithOptions:NSApplicationActivateIgnoringOtherApps];
+#pragma clang diagnostic pop
+				return;
+			}
+		}
+	});
+}
+
+static void activateAppScript(const char* cName) {
+	NSString* appName = [NSString stringWithUTF8String:cName];
+	NSString* src = [NSString stringWithFormat:
+		@"tell application \"%@\"\nreopen\nactivate\nend tell", appName];
+	NSAppleScript* script = [[NSAppleScript alloc] initWithSource:src];
+	[script executeAndReturnError:nil];
+}
 
 #define MAX_BINDINGS 64
 
@@ -57,7 +82,7 @@ static CGEventRef tapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRe
 			gLastSwallowed = keycode;
 			const char* name = gBindings[i].appName;
 			dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
-				goOnMatch((char*)name);
+				activateAppNative(name);
 			});
 			return NULL;
 		}

@@ -6,14 +6,12 @@ import (
 	"os/exec"
 	"strings"
 
-	"github.com/tofunmiadewuyi/summon/internal/activate"
 	"github.com/tofunmiadewuyi/summon/internal/config"
 	"github.com/tofunmiadewuyi/summon/internal/eventtap"
 	serror "github.com/tofunmiadewuyi/summon/internal/serrors"
 )
 
 func Register(cfg *config.Config) {
-	eventtap.SetCallback(activate.Focus)
 	eventtap.Clear()
 	seen := map[string]bool{}
 	for _, hk := range cfg.Hotkeys {

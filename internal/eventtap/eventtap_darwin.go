@@ -2,7 +2,7 @@ package eventtap
 
 /*
 #cgo CFLAGS: -x objective-c
-#cgo LDFLAGS: -framework ApplicationServices -framework CoreFoundation
+#cgo LDFLAGS: -framework AppKit -framework ApplicationServices -framework CoreFoundation
 #include "eventtap_darwin.h"
 #include <stdlib.h>
 #include <stdint.h>
@@ -42,20 +42,6 @@ func init() {
 func ValidKeyName(name string) bool {
 	_, ok := reverseCarbon[name]
 	return ok
-}
-
-// callback is set by hotkey via SetCallback and called when a bound combo fires.
-var callback func(string)
-
-func SetCallback(fn func(string)) {
-	callback = fn
-}
-
-//export goOnMatch
-func goOnMatch(name *C.char) {
-	if callback != nil {
-		callback(C.GoString(name))
-	}
 }
 
 // CGEventFlags values for each modifier (stable Apple constants).
