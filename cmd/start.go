@@ -1,0 +1,31 @@
+package main
+
+import (
+	"log"
+
+	"github.com/tofunmiadewuyi/summon/internal/config"
+	"github.com/tofunmiadewuyi/summon/internal/hotkey"
+)
+
+
+func start() {
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
+
+	hotkey.Register(cfg)
+
+	cfgCh := make(chan *config.Config)
+	go config.WatchConfig(cfgCh)
+
+	go func() {
+		for cfg := range cfgCh {
+			hotkey.Register(cfg)
+		}
+	}()
+
+	log.Println("hooks registered and ready to summon")
+	//block forever
+	select {}
+}
