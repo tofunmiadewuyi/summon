@@ -1,4 +1,5 @@
-package hotkey
+// Package activate brings a named macOS application to the foreground.
+package activate
 
 /*
 #cgo CFLAGS: -x objective-c
@@ -9,18 +10,8 @@ package hotkey
 import "C"
 import "unsafe"
 
-func deleteLastChar() {
-	C.deleteLastChar()
-}
-
-func nativeActivate(app string) {
-	cs := C.CString(app)
+func Focus(name string) {
+	cs := C.CString(name)
 	defer C.free(unsafe.Pointer(cs))
 	C.activateAppNative(cs)
-}
-
-func scriptActivate(app string) {
-	cs := C.CString(app)
-	defer C.free(unsafe.Pointer(cs))
-	C.activateAppScript(cs)
 }

@@ -1,17 +1,21 @@
+LD := -ldflags="-s -w -X main.version=dev"
+CGO_LDFLAGS := -Wl,-no_warn_duplicate_libraries
+export CGO_LDFLAGS
+
 build:
-	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd
+	go build $(LD) -o summon ./cmd
 
 build_run:
-	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon run
+	go build $(LD) -o summon ./cmd && ./summon run
 
 build_help:
-	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon help
+	go build $(LD) -o summon ./cmd && ./summon help
 
 build_config:
-	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon config
+	go build $(LD) -o summon ./cmd && ./summon config
 
 build_size:
-	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd && ls -lh summon
+	go build $(LD) -o summon ./cmd && ls -lh summon
 
 release:
 	@latest=$$(git tag --sort=-version:refname | head -1); \
