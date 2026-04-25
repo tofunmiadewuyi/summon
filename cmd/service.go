@@ -5,10 +5,10 @@ import (
 
 	"github.com/tofunmiadewuyi/summon/internal/config"
 	"github.com/tofunmiadewuyi/summon/internal/hotkey"
+	"github.com/tofunmiadewuyi/summon/internal/service"
 )
 
-
-func start() {
+func run() {
 	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -28,4 +28,16 @@ func start() {
 	log.Println("hooks registered and ready to summon")
 	//block forever
 	select {}
+}
+
+func start() {
+	service.LaunchdStart()
+}
+
+func status() {
+	service.LaunchdStatus()
+}
+
+func stop() {
+	service.LaunchdStop()
 }

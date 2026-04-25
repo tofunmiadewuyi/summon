@@ -1,5 +1,5 @@
 build:
-	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon start
+	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon run
 
 build_help:
 	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon help

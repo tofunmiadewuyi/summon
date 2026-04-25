@@ -1,4 +1,5 @@
-package main
+// Package service manages the running of summons in the background
+package service
 
 import (
 	"fmt"
@@ -6,6 +7,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"text/template"
+
+	"github.com/tofunmiadewuyi/summon/internal/config"
 )
 
 const plistLabel = "com.summon"
@@ -37,7 +40,7 @@ func plistPath() (string, error) {
 	return filepath.Join(home, "Library", "LaunchAgents", plistLabel+".plist"), nil
 }
 
-func launchdStart() {
+func LaunchdStart() {
 	binaryPath, err := os.Executable()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not determine binary path: %v\n", err)
@@ -78,7 +81,7 @@ func launchdStart() {
 	fmt.Println("summon started and will run on login")
 }
 
-func launchdStop() {
+func LaunchdStop() {
 	path, err := plistPath()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not determine plist path: %v\n", err)
@@ -96,4 +99,25 @@ func launchdStop() {
 	}
 
 	fmt.Println("summon stopped and removed from login items")
+}
+
+func LaunchdStatus() {
+	// running = launchctl list returns exit 0
+	running := exec.Command("launchctl", "list", plistLabel).Run() == nil
+
+	if running {
+		fmt.Println("status:  running")
+	} else {
+		fmt.Println("status:  stopped")
+	}
+
+	cfgPath, err := config.ConfigPath()
+	if err == nil {
+		fmt.Println("config: ", cfgPath)
+	}
+
+	cfg, err := config.Load()
+	if err == nil {
+		fmt.Printf("bindings: %d\n", len(cfg.Hotkeys))
+	}
 }

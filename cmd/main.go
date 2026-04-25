@@ -14,13 +14,16 @@ func main() {
 
 	switch os.Args[1] {
 	case "run":
-		start()
+		run()
 
 	case "start":
-		launchdStart()
+		start()
 
 	case "stop":
-		launchdStop()
+		stop()
+
+	case "status":
+		status()
 
 	case "add":
 		add()
