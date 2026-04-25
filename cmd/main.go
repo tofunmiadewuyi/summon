@@ -48,6 +48,9 @@ func main() {
 		fmt.Printf("  upgrade          Upgrade %s to the latest release\n", program)
 		fmt.Println("  version          Print the current version")
 		fmt.Println("  help             Show this help message")
+		fmt.Println()
+		fmt.Println("To find an app's exact name, run:")
+		fmt.Println("  osascript -e 'name of app \"Safari\"'")
 
 	default:
 		fmt.Println("Unknown command:", os.Args[1])

@@ -125,16 +125,24 @@ var modifierRawcodes = map[uint16]string{
 // modifierOrder defines canonical ordering for building combo strings.
 var modifierOrder = []string{"ctrl", "shift", "option", "cmd"}
 
+// carbonKeycodes maps macOS Carbon virtual keycodes to key names accepted by parser().
+var carbonKeycodes = map[uint16]string{
+	0: "a", 1: "s", 2: "d", 3: "f", 4: "h", 5: "g", 6: "z", 7: "x",
+	8: "c", 9: "v", 11: "b", 12: "q", 13: "w", 14: "e", 15: "r",
+	16: "y", 17: "t", 32: "u", 34: "i", 31: "o", 35: "p", 37: "l",
+	38: "j", 39: "'", 40: "k", 41: ";", 43: ",", 44: "/", 45: "n",
+	46: "m", 47: ".", 18: "1", 19: "2", 20: "3", 21: "4", 23: "5",
+	22: "6", 26: "7", 28: "8", 25: "9", 29: "0",
+	49: "space", 36: "enter", 48: "tab", 51: "delete", 53: "escape", 50: "`",
+	123: "left", 124: "right", 125: "down", 126: "up",
+	96: "f5", 97: "f6", 98: "f7", 99: "f3", 100: "f8", 101: "f9",
+	103: "f11", 109: "f10", 111: "f12", 118: "f4", 120: "f2", 122: "f1",
+}
+
 // CaptureHotkey blocks until the user presses a combo with at least one modifier
 // plus one non-modifier key. Returns the combo in summon format (e.g., "option+f").
 func CaptureHotkey() (string, error) {
 	fmt.Print("Press your desired hotkey combo... ")
-
-	// Build reverse lookup: rawcode → key name (same names parser() accepts).
-	reverseKeycode := make(map[uint16]string, len(hook.Keycode))
-	for name, code := range hook.Keycode {
-		reverseKeycode[code] = name
-	}
 
 	s := hook.Start()
 	defer hook.End()
@@ -151,8 +159,7 @@ func CaptureHotkey() (string, error) {
 			if len(activeModifiers) == 0 {
 				continue
 			}
-			// Resolve main key name.
-			keyName, ok := reverseKeycode[e.Rawcode]
+			keyName, ok := carbonKeycodes[e.Rawcode]
 			if !ok {
 				continue
 			}

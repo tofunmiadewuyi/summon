@@ -25,7 +25,7 @@ func run() {
 		}
 	}()
 
-	log.Println("hooks registered and ready to summon")
+	log.Println("ready to summon ✨")
 	//block forever
 	select {}
 }

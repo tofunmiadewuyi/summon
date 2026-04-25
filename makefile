@@ -1,4 +1,7 @@
 build:
+	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd
+
+build_run:
 	go build -ldflags="-s -w -X main.version=dev" -o summon ./cmd &&  ./summon run
 
 build_help:
