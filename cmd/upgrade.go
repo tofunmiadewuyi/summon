@@ -1,8 +1,7 @@
 package main
 
 import (
-	"archive/tar"
-	"compress/gzip"
+	"archive/zip"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -84,10 +83,10 @@ func upgrade() {
 	osName := runtime.GOOS
 	arch := runtime.GOARCH
 
-	filename := fmt.Sprintf("%s_%s_%s_%s.tar.gz", program, rel.TagName, osName, arch)
+	filename := fmt.Sprintf("%s_%s_%s_%s.zip", program, rel.TagName, osName, arch)
 	url := fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", repo, rel.TagName, filename)
 
-	tmpFile := fmt.Sprintf("/tmp/%s.tar.gz", program)
+	tmpFile := fmt.Sprintf("/tmp/%s.zip", program)
 
 	out, err := os.Create(tmpFile)
 	if err != nil {
@@ -115,40 +114,32 @@ func upgrade() {
 	out.Close()
 
 	// Extract
-	f, err := os.Open(tmpFile)
-	if err != nil {
-		fmt.Println("Upgrade failed:", err)
-		return
-	}
-	defer f.Close()
-
-	gzr, err := gzip.NewReader(f)
+	zr, err := zip.OpenReader(tmpFile)
 	if err != nil {
 		fmt.Println("Upgrade failed: could not read archive:", err)
 		return
 	}
-	tr := tar.NewReader(gzr)
+	defer zr.Close()
 
 	var binPath = fmt.Sprintf("/tmp/%s_new", program)
 	found := false
 
-	for {
-		hdr, err := tr.Next()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			fmt.Println("Upgrade failed: could not read archive:", err)
-			return
-		}
-		if hdr.Name == program {
-			outFile, err := os.Create(binPath)
+	for _, f := range zr.File {
+		if f.Name == program {
+			rc, err := f.Open()
 			if err != nil {
 				fmt.Println("Upgrade failed:", err)
 				return
 			}
-			io.Copy(outFile, tr)
+			outFile, err := os.Create(binPath)
+			if err != nil {
+				rc.Close()
+				fmt.Println("Upgrade failed:", err)
+				return
+			}
+			io.Copy(outFile, rc)
 			outFile.Close()
+			rc.Close()
 			found = true
 			break
 		}
