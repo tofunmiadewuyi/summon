@@ -75,8 +75,12 @@ func Clear() {
 	C.clearTapBindings()
 }
 
-func Start() {
-	C.startEventTap()
+func Start() bool {
+	return C.startEventTap() != 0
+}
+
+func IsRunning() bool {
+	return C.isTapRunning() != 0
 }
 
 var captureModifierNames = []struct {

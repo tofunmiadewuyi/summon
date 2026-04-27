@@ -22,5 +22,12 @@ func Confirm() {
 	for C.isAccessibilityEnabled(0) == 0 {
 		time.Sleep(2 * time.Second)
 	}
-	os.Exit(0) // launchd will restart the process now that permission is granted
+	time.Sleep(2 * time.Second) // let macOS commit the TCC grant before restart
+	os.Exit(0)                  // launchd will restart the process now that permission is granted
+}
+
+// RequestPermission shows the system accessibility prompt without blocking.
+// Used when the tap creation itself is the signal that permission is missing.
+func RequestPermission() {
+	C.isAccessibilityEnabled(1)
 }

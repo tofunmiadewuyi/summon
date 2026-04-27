@@ -17,6 +17,9 @@ build_config:
 build_size:
 	go build $(LD) -o summon ./cmd && ls -lh summon
 
+replace_build:
+	go build $(LD) -o $(shell which summon) ./cmd && summon start
+
 release:
 	@latest=$$(git tag --sort=-version:refname | head -1); \
 	if [ -z "$$latest" ]; then next="v0.0.1"; \

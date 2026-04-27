@@ -31,7 +31,14 @@ func Register(cfg *config.Config) {
 		}
 		eventtap.Register(parsed, hk.App)
 	}
-	eventtap.Start()
+}
+
+func Start() bool {
+	return eventtap.Start()
+}
+
+func IsRunning() bool {
+	return eventtap.IsRunning()
 }
 
 func CaptureHotkey() (string, error) {

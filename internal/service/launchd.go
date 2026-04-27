@@ -28,6 +28,10 @@ var plistTemplate = template.Must(template.New("plist").Parse(`<?xml version="1.
 	<true/>
 	<key>KeepAlive</key>
 	<true/>
+	<key>StandardOutPath</key>
+	<string>{{.LogPath}}</string>
+	<key>StandardErrorPath</key>
+	<string>{{.LogPath}}</string>
 </dict>
 </plist>
 `))
@@ -47,11 +51,22 @@ func LaunchdStart() {
 		os.Exit(1)
 	}
 
+	home, err := os.UserHomeDir()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "could not determine home directory: %v\n", err)
+		os.Exit(1)
+	}
+	logPath := filepath.Join(home, "Library", "Logs", "summon.log")
+
 	path, err := plistPath()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not determine plist path: %v\n", err)
 		os.Exit(1)
 	}
+
+	// Unload any existing instance before writing the new plist so a fresh
+	// daemon always starts with the current binary.
+	exec.Command("launchctl", "unload", path).Run()
 
 	if err := os.MkdirAll(filepath.Dir(path), 0755); err != nil {
 		fmt.Fprintf(os.Stderr, "could not create LaunchAgents directory: %v\n", err)
@@ -68,7 +83,8 @@ func LaunchdStart() {
 	if err := plistTemplate.Execute(f, struct {
 		Label      string
 		BinaryPath string
-	}{plistLabel, binaryPath}); err != nil {
+		LogPath    string
+	}{plistLabel, binaryPath, logPath}); err != nil {
 		fmt.Fprintf(os.Stderr, "could not render plist: %v\n", err)
 		os.Exit(1)
 	}
@@ -78,7 +94,7 @@ func LaunchdStart() {
 		os.Exit(1)
 	}
 
-	fmt.Println("summon started and will run on login")
+	fmt.Printf("summon started and will run on login (logs: %s)\n", logPath)
 }
 
 func LaunchdStop() {

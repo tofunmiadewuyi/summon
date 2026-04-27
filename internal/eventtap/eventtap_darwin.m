@@ -105,8 +105,13 @@ static CGEventRef tapCallback(CGEventTapProxy proxy, CGEventType type,
     if (gBindings[i].keycode == keycode && gBindings[i].modifiers == mods) {
       gLastSwallowed = keycode;
       NSAppleScript *script = (__bridge NSAppleScript *)gBindings[i].script;
+      NSString *appName = [NSString stringWithUTF8String:gBindings[i].appName];
       dispatch_async(dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
-        [script executeAndReturnError:nil];
+        NSDictionary *errInfo = nil;
+        NSAppleEventDescriptor *result = [script executeAndReturnError:&errInfo];
+        if (!result) {
+          NSLog(@"summon: AppleScript failed for %@: %@", appName, errInfo);
+        }
       });
       return NULL;
     }
@@ -167,22 +172,29 @@ int captureNextCombo(uint16_t *keycode, uint64_t *modifiers) {
 
 // — Persistent listener ----------------------------------------------------
 
-void startEventTap(void) {
-  if (gTap)
-    return;
+int isTapRunning(void) {
+  return gTap != NULL && CGEventTapIsEnabled(gTap);
+}
+
+int startEventTap(void) {
+  if (isTapRunning())
+    return 1;
+
+  // Release a previously created but disabled tap before retrying.
+  if (gTap) {
+    CFRelease(gTap);
+    gTap = NULL;
+  }
 
   gTap = CGEventTapCreate(
       kCGHIDEventTap, kCGHeadInsertEventTap, kCGEventTapOptionDefault,
       CGEventMaskBit(kCGEventKeyDown) | CGEventMaskBit(kCGEventKeyUp),
       tapCallback, NULL);
   if (!gTap)
-    return;
+    return 0;
 
-  // CFMachPortCreateRunLoopSource wraps the raw Mach port into a run-loop
-  // source. CFRunLoopAddSource attaches it to the main thread's run loop. Once
-  // CFRunLoopRun() is spinning (in runloop_darwin.go), keydown events wake the
-  // loop and invoke tapCallback.
   CFRunLoopSourceRef source = CFMachPortCreateRunLoopSource(NULL, gTap, 0);
   CFRunLoopAddSource(CFRunLoopGetMain(), source, kCFRunLoopCommonModes);
   CFRelease(source);
+  return 1;
 }
