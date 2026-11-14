@@ -1,6 +1,10 @@
-# summon
+<p align="center">
+  <img src="assets/icon.png" width="128" alt="summon icon">
+</p>
 
-Summon any app instantly with a global hotkey — from anywhere, any desktop.
+<h1 align="center">summon</h1>
+
+<p align="center">Summon any app instantly with a global hotkey — from anywhere, any desktop.</p>
 
 ## Why
 

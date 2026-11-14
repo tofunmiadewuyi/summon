@@ -16,8 +16,9 @@ trap "rm -rf $tmp" EXIT
   echo '</g></svg>'
 } > $tmp/icon.svg
 
-# Render to a 1024px png
+# Render to a 1024px png (also kept as icon.png for the README)
 rsvg-convert $tmp/icon.svg -o $tmp/icon.png
+cp $tmp/icon.png icon.png
 
 # Make every size macOS wants (normal + @2x retina)
 mkdir $tmp/AppIcon.iconset
