@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os/exec"
 	"runtime"
 	"time"
 
@@ -35,6 +36,9 @@ func run() {
 				hotkey.Start()
 			}
 			log.Println("event tap active ✨")
+				exec.Command("osascript", "-e",
+					`display notification "Hotkeys are now active" with title "Summon"`,
+				).Run()
 		}()
 	}
 
