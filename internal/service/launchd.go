@@ -46,6 +46,10 @@ func plistPath() (string, error) {
 
 func LaunchdStart() {
 	binaryPath, err := os.Executable()
+	if err == nil {
+		// point launchd at the real binary inside Summon.app, not the ~/.local/bin symlink
+		binaryPath, err = filepath.EvalSymlinks(binaryPath)
+	}
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "could not determine binary path: %v\n", err)
 		os.Exit(1)

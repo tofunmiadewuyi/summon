@@ -125,7 +125,7 @@ func upgrade() {
 	found := false
 
 	for _, f := range zr.File {
-		if f.Name == program {
+		if f.Name == "Summon.app/Contents/MacOS/"+program {
 			rc, err := f.Open()
 			if err != nil {
 				fmt.Println("Upgrade failed:", err)
@@ -152,11 +152,15 @@ func upgrade() {
 
 	os.Chmod(binPath, 0755)
 
+	// resolve the ~/.local/bin symlink so we replace the binary inside Summon.app
 	current, _ := os.Executable()
+	if real, err := filepath.EvalSymlinks(current); err == nil {
+		current = real
+	}
 
 	err = replaceBinary(binPath, current)
 	if err != nil {
-		fallback := filepath.Join(os.Getenv("HOME"), fmt.Sprintf(".local/bin/%s"), program)
+		fallback := filepath.Join(os.Getenv("HOME"), ".local/bin", program)
 		os.MkdirAll(filepath.Dir(fallback), 0755)
 		err2 := replaceBinary(binPath, fallback)
 		if err2 != nil {

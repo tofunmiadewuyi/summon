@@ -1,4 +1,6 @@
-LD := -ldflags="-s -w -X main.version=dev"
+VERSION ?= dev
+LD := -ldflags="-s -w -X main.version=$(VERSION)"
+APP := Summon.app
 CGO_LDFLAGS := -Wl,-no_warn_duplicate_libraries
 export CGO_LDFLAGS
 
@@ -17,8 +19,22 @@ build_config:
 build_size:
 	go build $(LD) -o summon ./cmd && ls -lh summon
 
-replace_build:
-	go build $(LD) -o $(shell which summon) ./cmd && summon start
+# Build Summon.app (binary + Info.plist + icon), ad-hoc signed
+app:
+	rm -rf $(APP)
+	mkdir -p $(APP)/Contents/MacOS $(APP)/Contents/Resources
+	cp assets/Info.plist $(APP)/Contents/
+	cp assets/AppIcon.icns $(APP)/Contents/Resources/
+	go build $(LD) -o $(APP)/Contents/MacOS/summon ./cmd
+	codesign --force --sign - $(APP)
+
+# Install the local build to ~/Applications, link it into ~/.local/bin, restart the agent
+replace_build: app
+	rm -rf ~/Applications/$(APP)
+	mkdir -p ~/Applications ~/.local/bin
+	cp -R $(APP) ~/Applications/
+	ln -sf ~/Applications/$(APP)/Contents/MacOS/summon ~/.local/bin/summon
+	~/.local/bin/summon start
 
 release:
 	@latest=$$(git tag --sort=-version:refname | head -1); \

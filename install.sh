@@ -28,8 +28,19 @@ echo "Installing ${PROGRAM} $VERSION for $OS/$ARCH..."
 TMP_DIR=$(mktemp -d)
 curl -fsSL "$URL" -o "$TMP_DIR/$FILENAME"
 unzip -q "$TMP_DIR/$FILENAME" -d "$TMP_DIR"
-chmod +x "$TMP_DIR/${PROGRAM}_${VERSION}_${OS}_${ARCH}"
-mv "$TMP_DIR/${PROGRAM}_${VERSION}_${OS}_${ARCH}" "$TMP_DIR/$PROGRAM"
+
+if [ -d "$TMP_DIR/Summon.app" ]; then
+  # Newer releases ship Summon.app (gives it an icon in Login Items); it lives in ~/Applications
+  APP_DIR="$HOME/Applications"
+  mkdir -p "$APP_DIR"
+  rm -rf "$APP_DIR/Summon.app"
+  mv "$TMP_DIR/Summon.app" "$APP_DIR/"
+  APP_BIN="$APP_DIR/Summon.app/Contents/MacOS/$PROGRAM"
+else
+  # Older releases ship a bare binary
+  chmod +x "$TMP_DIR/${PROGRAM}_${VERSION}_${OS}_${ARCH}"
+  mv "$TMP_DIR/${PROGRAM}_${VERSION}_${OS}_${ARCH}" "$TMP_DIR/$PROGRAM"
+fi
 
 INSTALL_DIR="/usr/local/bin"
 
@@ -56,7 +67,12 @@ if [ ! -w "$INSTALL_DIR" ]; then
   fi
 fi
 
-mv "$TMP_DIR/$PROGRAM" "$INSTALL_DIR/$PROGRAM"
+if [ -n "$APP_BIN" ]; then
+  # Put `summon` on PATH as a symlink to the binary inside the app
+  ln -sf "$APP_BIN" "$INSTALL_DIR/$PROGRAM"
+else
+  mv "$TMP_DIR/$PROGRAM" "$INSTALL_DIR/$PROGRAM"
+fi
 
 echo "Installed to $INSTALL_DIR/$PROGRAM"
 

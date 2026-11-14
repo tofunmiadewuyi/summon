@@ -37,8 +37,8 @@ jobs:
           PROGRAM="summon"
           NAME="${PROGRAM}_${VERSION}_darwin_${{ matrix.goarch }}"
           mkdir -p dist
-          go build -ldflags="-s -w -X main.version=$VERSION" -o "dist/$NAME" ./cmd
-          zip -j "dist/${NAME}.zip" "dist/$NAME"
+          make app VERSION=$VERSION
+          ditto -c -k --keepParent Summon.app "dist/${NAME}.zip"
 
       - uses: actions/upload-artifact@v4
         with:
