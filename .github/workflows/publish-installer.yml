@@ -1,0 +1,25 @@
+name: Publish installer
+
+# Serves install.sh at https://summon.tofunmiadewuyi.com/install.sh (R2 bucket on that domain)
+on:
+  push:
+    branches: [main]
+    paths: [install.sh]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: ${{ vars.SUMMON_R2_BUCKET != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Upload install.sh to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: auto
+        run: |
+          aws s3 cp install.sh "s3://${{ vars.SUMMON_R2_BUCKET }}/install.sh" \
+            --content-type text/x-sh \
+            --endpoint-url "https://${{ vars.CLOUDFLARE_ACCOUNT_ID }}.r2.cloudflarestorage.com"

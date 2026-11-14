@@ -15,7 +15,7 @@ So I built summon. It uses osascript under the hood, keeping it as macOS-native 
 ## Install
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/tofunmiadewuyi/summon/main/install.sh | bash
+curl -fsSL https://summon.tofunmiadewuyi.com/install.sh | bash
 ```
 
 Or download manually from [releases](https://github.com/tofunmiadewuyi/summon/releases).
